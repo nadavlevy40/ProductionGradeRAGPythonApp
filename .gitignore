@@ -1,4 +1,4 @@
-# Python-generated files
+# --- Python Internals ---
 __pycache__/
 *.py[oc]
 build/
@@ -6,7 +6,21 @@ dist/
 wheels/
 *.egg-info
 
-# Virtual environments
-.venv
-/uploads
+# --- Virtual Environments ---
+.venv/
+venv/
+env/
+
+# --- Environment & Secrets (Important!) ---
 .env
+
+# --- Project Data (Don't commit these!) ---
+/uploads
+qdrant_storage/
+
+# --- IDE Settings ---
+.vscode/
+.idea/
+
+# --- OS Specific ---
+.DS_Store

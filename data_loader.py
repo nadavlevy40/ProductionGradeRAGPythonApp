@@ -2,6 +2,7 @@ from openai import OpenAI
 from llama_index.readers.file import PDFReader
 from llama_index.core.node_parser import SentenceSplitter
 from dotenv import load_dotenv
+import pdfplumber
 
 load_dotenv()
 
@@ -11,12 +12,33 @@ EMBED_DIM = 3072
 
 splitter = SentenceSplitter(chunk_size=1000, chunk_overlap=200)
 
-def load_and_chunk_pdf(path: str):
-    docs = PDFReader().load_data(file=path)
-    texts = [d.text for d in docs if getattr(d, "text", None)]
+def load_and_chunk_pdf(pdf_path: str, chunk_size: int = 1000, overlap: int = 200) -> list[str]:
+    text_content = ""
+    
+    # Use pdfplumber for better Hebrew/Unicode support
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text_content += page_text + "\n"
+
+    # If extraction failed (still empty), return empty list
+    if not text_content.strip():
+        print(f"WARNING: No text extracted from {pdf_path}. Is it a scanned image?")
+        return []
+
+    # Simple character-based chunking
     chunks = []
-    for t in texts:
-        chunks.extend(splitter.split_text(t))
+    start = 0
+    text_len = len(text_content)
+
+    while start < text_len:
+        end = start + chunk_size
+        chunk = text_content[start:end]
+        chunks.append(chunk)
+        # Move forward, subtracting overlap to keep context
+        start += chunk_size - overlap
+    
     return chunks
 
 
